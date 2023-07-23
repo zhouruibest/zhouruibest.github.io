@@ -1,0 +1,91 @@
+程序的编译单位是源程序文件，一个源文件可以包含一个或若干个函数。在函数内定义的变量是局部变量，而在函数之外定义的变量则称为外部变量，**外部变量也就是我们所讲的全局变量**。它的存储方式为**静态存储**，**生存周期为整个程序的生存周期**。全局变量可以为本文件中的其他函数所共用，它的有效范围为从定义变量的位置开始到本源文件结束。
+
+**如果全局变量不在文件的开头定义，有效的作用范围将只限于其定义处到文件结束。如果在定义点之前的函数想引用该全局变量，则应该在引用之前用关键字 extern 对该变量作“外部变量声明”，表示该变量是一个已经定义的外部变量。有了此声明，就可以从“声明”处起，合法地使用该外部变量。**
+
+# 例子1
+
+> 代码中，全局变量 g_X 与 g_Y 是在 main 函数之后声明的，因此它的作用范围不在 main 函数中。如果我们需要在 main 函数中调用它们，就必须使用 extern 来对变量 g_X 与 g_Y 作“外部变量声明”，以扩展全局变量的作用域。也就是说，如果在变量定义之前要使用该变量，则应在使用之前加 extern 声明变量，使作用域扩展到从声明开始到本文件结束。
+
+```c
+#include <stdio.h>
+int max(int x,int y);
+int main(void)
+{
+    int result;
+    /*外部变量声明*/
+    extern int g_X;
+    extern int g_Y;
+    result = max(g_X,g_Y);
+    printf("the max value is %d\n",result);
+    return 0;
+}
+/*定义两个全局变量*/
+int g_X = 10;
+int g_Y = 20;
+int max(int x, int y)
+{
+    return (x>y ? x : y);
+}
+```
+
+# 例子2
+
+>
+
+```c
+/****max.c****/
+#include <stdio.h>
+/*外部变量声明*/
+extern int g_X ;
+extern int g_Y ;
+int max()
+{
+    return (g_X > g_Y ? g_X : g_Y);
+}
+
+/***main.c****/
+#include <stdio.h>
+/*定义两个全局变量*/
+int g_X=10;
+int g_Y=20;
+int max();
+int main(void)
+{
+    int result;
+    result = max();
+    printf("the max value is %d\n",result);
+    return 0;
+}
+```
+
+# 注意
+
+external声明和定义的区别,定义只有一次，但是声明没有限制
+
+```c
+int a;　　// 定义，默认为0（等效于int a = 0;）
+
+extern int a;　　// 声明外部变量
+
+extern int a = 1;　// 定义性声明（即在定义的同时声明为全局变量），一般不提倡
+```
+
+比如：
+
+头文件a.h:
+
+`extern int a = 1;`
+
+头文件b.h:
+
+`#include "a.h"`
+
+......
+
+源文件test.c:
+
+`#include "a.h"`
+
+`#include "b.h"`
+
+
