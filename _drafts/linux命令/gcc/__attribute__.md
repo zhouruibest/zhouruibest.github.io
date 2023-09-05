@@ -30,8 +30,12 @@ this is after...
 
 ```
 ## 用法2
+表明函数调用完成后不返回主调函数（比如里面有exit()，不是说没有返回值，而是指，不把控制权交给主调函数）, 注意，这与void返回类型不同。
+目的1 用户不要随便调用这个函数
+目的2 编译器可以优化一些代码
+
 ```c
-__attribute__((noreturn))
+__attribute__((__noreturn__))
 void test()
 {
     exit(0); // 注意，这里不能return；
@@ -41,7 +45,7 @@ void test()
 ## 用法3
 设置整形的长度
 ```c
-typedef unsigned int myint __attribute((mode(HI)));
+typedef unsigned int myint __attribute__((mode(HI)));
 ```
 
 ## 用法4
