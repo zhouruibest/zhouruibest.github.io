@@ -1,5 +1,5 @@
 # C语言的__attribute__机制
-使GUN的扩展，不是C标准
+是GUN的扩展，不是C标准
 ## 用法1
 以下函数中，虽然before和after都没有被main调用， 但是他们都在main之前、之后调用了一下
 ```c
@@ -35,11 +35,22 @@ this is after...
 目的2 编译器可以优化一些代码
 
 ```c
+// 用在函数定义
 __attribute__((__noreturn__))
 void test()
 {
     exit(0); // 注意，这里不能return；
 }
+
+// 还可以用在函数声明
+void usageErr(const char *format, ...) __attribute__((__noreturn__))
+// 定义时就不用了
+void
+usageErr(const char *format, ...)
+{
+    ...
+}
+
 ```
 
 ## 用法3
