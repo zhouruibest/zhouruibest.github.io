@@ -1,0 +1,161 @@
+
+# 一些重要的字符集
+1. ASCII，共收录128个字符，使用1个字节表示
+
+2. ISO 8859-1，在ASCII字符集的基础上又扩充了128个西欧常用字符(包括德法两国的字母)，也可以使用1个字节来进行编码。这个字符集也有一个别名latin1
+3. GB2312， 收录了汉字以及拉丁字母、希腊字母、日文平假名及片假名字母、俄语西里尔字母。其中收录汉字6763个，其他文字符号682个。同时这种字符集又兼容ASCII字符集，所以在编码方式上显得有些奇怪：
+
+- 如果该字符在ASCII字符集中，则采用1字节编码。
+- 否则采用2字节编码。
+
+4. GBK 在收录字符范围上对GB2312字符集作了扩充，编码方式上兼容GB2312
+
+5.utf8 收录地球上能想到的所有字符，而且还在不断扩充。这种字符集兼容ASCII字符集，采用变长编码方式，编码一个字符需要使用1～4个字节
+
+# MySQL中支持的字符集和排序规则
+
+- utf8mb3：阉割过的utf8字符集，只使用1～3个字节表示字符
+- utf8mb4：正宗的utf8字符集，使用1～4个字节表示字符
+
+有一点需要大家十分的注意，在MySQL中utf8是utf8mb3的别名，所以之后在MySQL中提到utf8就意味着使用1~3个字节来表示一个字符，如果大家有使用4字节编码一个字符的情况，比如存储一些emoji表情什么的，那请使用utf8mb4。
+
+## 查看MySQL支持的字符集
+
+`SHOW (CHARACTER SET|CHARSET) [LIKE 匹配的模式];`
+
+```sh
+SHOW CHARSET;
+
++----------+---------------------------------+---------------------+--------+
+| Charset  | Description                     | Default collation   | Maxlen |
++----------+---------------------------------+---------------------+--------+
+| latin1   | cp1252 West European            | latin1_swedish_ci   |      1 |
+| ascii    | US ASCII                        | ascii_general_ci    |      1 |
+| gb2312   | GB2312 Simplified Chinese       | gb2312_chinese_ci   |      2 |
+| gbk      | GBK Simplified Chinese          | gbk_chinese_ci      |      2 |
+| utf8     | UTF-8 Unicode                   | utf8_general_ci     |      3 |
+| utf8mb4  | UTF-8 Unicode                   | utf8mb4_general_ci  |      4 |
+...
+...
++----------+---------------------------------+---------------------+--------+
+
+41 rows in set (0.01 sec)
+```
+Maxlen: 该字符集表示一个字符最多需要几个字节
+Default collation: 该字符集中一种默认的比较规则
+utf8_polish_ci表示以波兰语的规则比较，utf8_spanish_ci是以西班牙语的规则比较，utf8_general_ci是一种通用的比较规则。ci是case insensitive不区分大小写
+
+# 字符集和比较规则的应用
+
+MySQL有4个级别的字符集和比较规则，分别是
+
+1. 服务器级别
+
+MySQL提供了两个系统变量来表示服务器级别的字符集和比较规则，character_set_server表示服务器级别的字符集；collation_server表示服务器级别的比较规则。可以在启动服务器程序时通过启动选项或者在服务器程序运行过程中使用SET语句修改这两个变量的值。比如我们可以在配置文件中这样写：
+
+```conf
+[server]
+character_set_server=gbk
+collation_server=gbk_chinese_ci
+```
+
+2. 数据库级别
+
+在创建和修改数据库的时候可以指定该数据库的字符集和比较规则
+
+```sql
+CREATE DATABASE 数据库名
+    [[DEFAULT] CHARACTER SET 字符集名称]
+    [[DEFAULT] COLLATE 比较规则名称];
+
+ALTER DATABASE 数据库名
+    [[DEFAULT] CHARACTER SET 字符集名称]
+    [[DEFAULT] COLLATE 比较规则名称];
+
+CREATE DATABASE charset_demo_db CHARACTER SET gb2312 COLLATE gb2312_chinese_ci;
+```
+
+如果想查看当前数据库使用的字符集和比较规则，可以查看下面两个系统变量的值（前提是使用USE语句选择当前默认数据库，如果没有选择，则变量与相应的服务器级系统变量具有相同的值）：
+
+3. 表级别
+
+```sql
+CREATE TABLE 表名 (列的信息)
+    [[DEFAULT] CHARACTER SET 字符集名称]
+    [COLLATE 比较规则名称]]
+
+ALTER TABLE 表名
+    [[DEFAULT] CHARACTER SET 字符集名称]
+    [COLLATE 比较规则名称]
+
+CREATE TABLE t(col VARCHAR(10)) CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
+
+ 如果创建和修改表的语句中没有指明字符集和比较规则，将使用该表所在数据库的字符集和比较规则作为该表的字符集和比较规则。
+
+4. 列级别
+
+```sql
+CREATE TABLE 表名(
+    列名 字符串类型 [CHARACTER SET 字符集名称] [COLLATE 比较规则名称],
+    其他列...
+);
+
+ALTER TABLE 表名 MODIFY 列名 字符串类型 [CHARACTER SET 字符集名称] [COLLATE 比较规则名称];
+
+ALTER TABLE t MODIFY col VARCHAR(10) CHARACTER SET gbk COLLATE gbk_chinese_ci;
+```
+
+# 仅修改字符集或仅修改比较规则
+
+由于字符集和比较规则是互相有联系的，如果我们只修改了字符集，比较规则也会跟着变化，如果只修改了比较规则，字符集也会跟着变化，具体规则如下：
+
+- 只修改字符集，则比较规则将变为修改后的字符集默认的比较规则。
+- 只修改比较规则，则字符集将变为修改后的比较规则对应的字符集。
+
+# 客户端和服务器通信中的字符集
+
+说到底，字符串在计算机上的体现就是一个字节串，如果你使用不同字符集去解码这个字节串，最后得到的结果可能让你挠头, 看上去就像是产生了乱码.
+
+## MySQL中字符集的转换
+
+从发送请求到返回结果这个过程中伴随着多次字符集的转换，在这个过程中会用到3个系统变量
+
+|系统变量|描述|
+|--|--|
+|character_set_client|服务器解码请求时使用的字符集|
+|character_set_connection|**服务器处理请求时**会先把请求字符串从character_set_client转为character_set_connection|
+|character_set_results|服务器向客户端返回数据时使用的字符集|
+
+![请求过程中字符集转换](./请求过程中字符集转换.png)
+
+几点需要注意的地方：
+
+- 服务器认为客户端发送过来的请求是用character_set_client编码的。
+> 假设你的客户端采用的字符集和 character_set_client 不一样的话，这就会出现意想不到的情况。比如我的客户端使用的是utf8字符集，如果把系统变量character_set_client的值设置为ascii的话，服务器可能无法理解我们发送的请求，更别谈处理这个请求了。
+
+- 服务器将把得到的结果集使用character_set_results编码后发送给客户端。
+> 假设你的客户端采用的字符集和 character_set_results 不一样的话，这就可能会出现客户端无法解码结果集的情况，结果就是在你的屏幕上出现乱码。比如我的客户端使用的是utf8字符集，如果把系统变量character_set_results的值设置为ascii的话，可能会产生乱码。
+
+- character_set_connection只是服务器在将请求的字节串从character_set_client转换为character_set_connection时使用，它是什么其实没多重要，但是一定要注意，该字符集包含的字符范围一定涵盖请求中的字符，要不然会导致有的字符无法使用character_set_connection代表的字符集进行编码。
+> 比如你把character_set_client设置为utf8，把character_set_connection设置成ascii，那么此时你如果从客户端发送一个汉字到服务器，那么服务器无法使用ascii字符集来编码这个汉字，就会向用户发出一个警告。
+
+为了实现简化，通常都把 character_set_client 、character_set_connection、character_set_results 这三个系统变量设置成和客户端使用的字符集一致的情况，这样减少了很多无谓的字符集转换。为了方便我们设置，MySQL提供了一条非常简便的语句：
+
+`SET NAMES 字符集名;`
+
+它的效果等同于
+
+```sql
+SET character_set_client = 字符集名;
+SET character_set_connection = 字符集名;
+SET character_set_results = 字符集名;
+```
+
+启动客户端的时候就把character_set_client、character_set_connection、character_set_results这三个系统变量的值设置成一样的，那我们可以在启动客户端的时候指定一个叫default-character-set的启动选项，比如在配置文件里可以这么写：
+
+```conf
+[client]
+default-character-set=utf8
+```
+
