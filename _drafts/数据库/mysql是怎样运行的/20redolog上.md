@@ -72,6 +72,8 @@ log block trailer中属性的意思如下：
 
 写入redo日志时也不能直接直接写到磁盘上，实际上在服务器启动时就向操作系统申请了一大片称之为redo log buffer的连续内存空间，翻译成中文就是redo日志缓冲区，简称为log buffer。这片内存空间被划分成若干个连续的redo log block
 
+可以通过启动参数innodb_log_buffer_size来指定log buffer的大小，在MySQL 5.7.21这个版本中，该启动参数的默认值为16MB。
+
 ![redo-log-buffer示意.png](./redo-log-buffer示意.png)
 
 
