@@ -39,3 +39,15 @@ MySQL的数据目录（使用SHOW VARIABLES LIKE 'datadir'查看）下默认有�
 InnoDB的为记录已经写入的redo日志量，设计了一个称之为Log Sequeue Number的全局变量，翻译过来就是：日志序列号，简称lsn，从8704开始，非连续的。
 
 向log buffer中写入redo日志时不是一条一条写入的，而是以一个mtr生成的一组redo日志为单位进行写入的
+
+## flushed_to_disk_lsn
+
+lsn 当前系统中写入的redo日志量(字节量)，这包括了写到log buffer而没有刷新到磁盘的日志
+
+flushed_to_disk_lsn用来标记log buffer中已经有哪些日志被刷新到磁盘中了
+
+![flushed_to_disk_lsn](./flushed_to_disk_lsn.png)
+
+当有新的redo日志写入到log buffer时，首先lsn的值会增长，但flushed_to_disk_lsn不变，随后随着不断有log buffer中的日志被刷新到磁盘上，flushed_to_disk_lsn的值也跟着增长。如果两者的值相同时，说明log buffer中的所有redo日志都已经刷新到磁盘中了。
+
+> buf_next_to_write的全局变量，标记当前log buffer中已经有哪些日志被刷新到磁盘中了
