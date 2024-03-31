@@ -64,3 +64,14 @@ func (n *branchPageElement) key() []byte {
 
 ![leaf-page结构示意图.svg](./leaf-page结构示意图.svg)
 
+## 读操作和缓存策略
+
+boltdb在读取数据库文件时，为了避免频繁进行设备I/O，使用了mmap技术作为缓存。当boltdb打开数据库时，其会将数据库文件通过mmap系统调用映射到内存。这样可以避免使用read系统调用读取I/O设备，而是直接以内存访问的方式读取数据。在通过mmap将数据库文件映射到内存后，boltdb会根据数据库文件构建内存数据结构，如meta、freelist、B+Tree结构。
+
+根据使用方式的不同，meta、freelist、B+Tree使用mmap中数据的方式各不相同。
+
+boltdb将其meta直接指向了mmap内存空间的meta page，但仅用来读取，不会直接修改meta page。当创建新事务时，boltdb会复制当前的meta page到一处内存中，作为该事务开始时的meta快照。
+
+freelist和B+Tree都是根据mmap内存空间的page在内存别处构建的数据结构，但二者的构建策略不同。freelist是在打开数据库时完整地读取mmap内存空间中的freelist page构建的；而B+Tree则是在使用中按需构建的，即在读取B+Tree的node时，如果node已经在缓存中构建过，则读取已经构建好的缓存，如果node还没在缓存中构建过，则读取mmap内存空间中的数据，在内存别处构建node的缓存。
+
+![bolt读操作和缓存策略示意图.svg](./bolt读操作和缓存策略示意图.svg)
