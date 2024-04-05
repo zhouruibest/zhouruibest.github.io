@@ -75,3 +75,38 @@ boltdb将其meta直接指向了mmap内存空间的meta page，但仅用来读取
 freelist和B+Tree都是根据mmap内存空间的page在内存别处构建的数据结构，但二者的构建策略不同。freelist是在打开数据库时完整地读取mmap内存空间中的freelist page构建的；而B+Tree则是在使用中按需构建的，即在读取B+Tree的node时，如果node已经在缓存中构建过，则读取已经构建好的缓存，如果node还没在缓存中构建过，则读取mmap内存空间中的数据，在内存别处构建node的缓存。
 
 ![bolt读操作和缓存策略示意图.svg](./bolt读操作和缓存策略示意图.svg)
+
+
+## 写操作与缓存策略
+
+![bolt写操作和缓存策略示意图.svg](./bolt写操作和缓存策略示意图.svg)
+
+无论是修改meta、freelist，还是修改或写入新B+Tree的node时，boltdb都会先将数据按照page结构写入mmap内存空间外的page buffer中，等到事务提交时再将page buffer中数据写入到底层数据库文件相应的page处。
+
+
+### pwrite + fdatasync（memory->disk）
+
+为了保证事务的ACID性质，当事务提交时，boltdb需要保证数据被完整地写入到了磁盘中。
+
+在Linux中:
+
+(1) write/pwrite等系统调用不会等待设备I/O完成后再返回。write/pwrite等系统调用只会更新page cache，而脏页的同步时间由操作系统控制。
+
+(2) sync系统调用会在page cache中的脏页提交到设备I/O队列后返回，但是不会等待设备I/O完成。如果此时I/O设备故障，则数据还可能丢失。
+
+(3) fsync与fdatasync则会等待设备I/O完成后返回，以提供最高的同步保证。
+
+(4) fsync与fdatasync的区别在于，fdatasync只会更新文件数据和必要的元数据（如文件大小等），而fsync会更新文件数据和所有相关的元数据（包括文件修改时间等），由于文件元数据与数据的保存位置可能不同，因此在磁盘上fsync往往比fdatasync多一次旋转时延。
+
+(5) 对于内存映射文件，Linux提供了msync系统调用。该系统调用可以更精确地控制同步的内存范围。
+
+虽然boltdb使用了内存映射文件，但是当事务提交时，其还是通过pwrite + fdatasync的方式同步刷盘。在Linux的文档中并没有详细说明混用普通文件的同步方式与内存映射文件的同步方式的影响。但是通过实践和mmap的MAP_SHARED模式的描述可知，使用SHARED的mmap，当其它进程通过fdatasync等系统调用修改底层文件后，修改能通过mmap的内存访问到。
+
+
+
+
+
+
+
+
+
