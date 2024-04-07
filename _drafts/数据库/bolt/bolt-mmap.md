@@ -52,7 +52,7 @@ branch page与leaf page是boltdb中用来保存B+树节点的页。B+树的分�
 type branchPageElement struct {
 	pos   uint32
 	ksize uint32
-	pgid  pgid
+	pgid  pgid // 与该key对应的孩子节点的页id
 }
 
 // key returns a byte slice of the node key.
@@ -63,6 +63,29 @@ func (n *branchPageElement) key() []byte {
 ```
 
 ![leaf-page结构示意图.svg](./leaf-page结构示意图.svg)
+
+ ```go
+
+// leafPageElement represents a node on a leaf page.
+type leafPageElement struct {
+	flags uint32 //flags字段标识了该元素的类型（是普通的key/value还是bucket）
+	pos   uint32
+	ksize uint32
+	vsize uint32
+}
+
+// key returns a byte slice of the node key.
+func (n *leafPageElement) key() []byte {
+	buf := (*[maxAllocSize]byte)(unsafe.Pointer(n))
+	return (*[maxAllocSize]byte)(unsafe.Pointer(&buf[n.pos]))[:n.ksize:n.ksize]
+}
+
+// value returns a byte slice of the node value.
+func (n *leafPageElement) value() []byte {
+	buf := (*[maxAllocSize]byte)(unsafe.Pointer(n))
+	return (*[maxAllocSize]byte)(unsafe.Pointer(&buf[n.pos+n.ksize]))[:n.vsize:n.vsize]
+}
+```
 
 ## 读操作和缓存策略
 
