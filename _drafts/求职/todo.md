@@ -14,13 +14,30 @@ ttrpc
 
 OAuth2.0模式
 
-云原生 面试
-k8s 面试
+
 go 面试
 分布式 面试
 redis如何删除过期数据？
 web socket的交互过程
-quick
 2PC，3PC
 
 F5/LVS 硬件级别的负载均衡器
+
+
+# Context的底层实现，是否是线程安全的？
+# 字符串转为数据流，需不需要进行深拷贝？
+
+# argo argocd argoflow ⭐⭐⭐⭐⭐
+# kubelet，probe manager，gateprobe ⭐⭐⭐⭐⭐
+# prometheus ⭐⭐⭐⭐
+# Opentelemetry ⭐⭐
+# service mesh istio ⭐⭐
+# 多云环境 ⭐⭐
+# etcd  ⭐⭐⭐⭐
+# redis ⭐⭐⭐
+# sla slo ⭐
+# 认证、授权 ⭐⭐⭐
+# csi ⭐⭐⭐⭐⭐
+# 容器逃逸问题 ⭐⭐⭐
+# ServiceAccount & ServiceAccount Token ⭐⭐⭐
+# Kubebuilder和Operator-SDK之间如何选择？⭐⭐⭐

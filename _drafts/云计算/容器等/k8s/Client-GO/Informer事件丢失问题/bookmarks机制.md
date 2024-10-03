@@ -1,0 +1,14 @@
+k8s apiserver bookmarks机制以更高效检测变更
+
+list-watch背景：
+
+List-Watch 是kubernetes中server和client通信的最核心的机制， 比如说api-server监听etcd， kubelet监听api-server， scheduler监听api-server等等，其实其他模块监听api-server相当于监听etcd，因为在k8s的设计中，只有api-server能跟etcd通信，其他模块需要etcd的数据就只好监听api-server了。
+
+etcd默认保留5分钟以内的变更记录，每个资源发生变更都会更新一个更大的资源版本ResourceVersion，ResourceVersion是一个所有资源类型共享的全局变量。
+
+1. 对于watch请求来说，你可以指定一个resourceVersion=0来获取5分钟以内的任意变更记录及其之后，这种表现很奇怪，所以不建议指定0。可以指定一个resourceVersion来获取这个资源版本之后的变更记录，但这个资源版本早于5分钟以内保留的最小版本，则会回复一个410状态码，如果大于最大版本，则可能会一直等下去，直到超时。
+
+2. 对于list，请求后会返回一个Kind=XXList的资源类型，XXList这种资源类型是按照惯例附带创建的，比如Pod和PodList，如果你写过CRD应该能明白了；items字段内包含资源列表，metadata包含的了resourceVersion，但这个resourceVersion是PodList的资源版本，而不是Pod的资源版本，指定resourceVersion=0来获取任意的PodList，也可以指定一个resourceVersion来获取这个资源版本或之后的PodList，如果指定的resourceVersion小于当前最新资源版本，它总是返回最新的PodList，如果大于则返回504状态码。但如果你指定了limit参数或resourceVersionMatch=Excat，就意味着apiserver必须精准匹配你填写的resourceVersion，这时候就和watch一样了，如果找不到指定的resourceVersion（可能是超过了5分钟），则会返回410状态码。
+
+3. 变更事件有四种：ADD, DELETE, MODIFY, BOOKMARK。BOOKMARK是干什么的？正如前面所说etcd只保留5分钟的变更记录，万一客户端很长时间内都没有watch到变更，然后断连之后又重连到apiserver时，客户端可能按常规的把上次收到的resourceVersion传到url里，但这个resourceVersion已经是一个过期的资源版本，apiserver找不到资源版本，就会回复一个410状态码。那么这时客户端为了能获取最新的资源版本号就不得不先list（**即re-list**）一次。为了防止这种情况，apiserver会定期发送BOOKMARK事件，BOOKMARK将包含一个当前最新的资源版本号，尽管这个版本号对应的资源类型并不是你监听的那种，但这样是为了客户端能更新最新的资源版本号，而不至于需要发起list（**即re-list**）请求
+
