@@ -11,9 +11,6 @@
 
 # 3. 知识点
 
-- argocd ⭐⭐⭐
-https://icloudnative.io/posts/what-is-gitops/#google_vignette
-
 - Context的底层实现，是否是线程安全的？⭐⭐⭐⭐⭐
 - 字符串转为数据流，需不需要进行深拷贝？⭐⭐⭐⭐⭐
 
@@ -39,6 +36,9 @@ https://cloud.tencent.com/developer/article/2314677
 - etcd  ⭐⭐⭐⭐
 - redis ⭐⭐⭐
 - sla slo ⭐
+- kustomize ⭐
+- sops,gpg，SealedSecret ⭐
+https://majinghe.github.io/devsecops/secret-encrypt/
 
 
 # 4. 其他
