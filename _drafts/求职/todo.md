@@ -13,19 +13,22 @@
 
 - Context的底层实现，是否是线程安全的？⭐⭐⭐⭐⭐
 - 字符串转为数据流，需不需要进行深拷贝？⭐⭐⭐⭐⭐
+
 - cgroup
 https://www.ctyun.cn/developer/article/469033632022597
 https://blog.kelu.org/tech/2019/10/11/kubernetes-limit-iops-per-container.html
 https://cloud.tencent.com/developer/article/2314677
+
 - prometheus ⭐⭐⭐⭐
 - Opentelemetry ⭐⭐
+
 - service mesh istio ⭐⭐
 - 多云环境 ⭐⭐
 - etcd  ⭐⭐⭐⭐
 - redis ⭐⭐⭐
 - sla slo ⭐
 - kustomize ⭐
-- sops,gpg，SealedSecret ⭐
+
 https://majinghe.github.io/devsecops/secret-encrypt/
 
 

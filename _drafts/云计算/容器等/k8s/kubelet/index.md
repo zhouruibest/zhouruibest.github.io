@@ -126,9 +126,13 @@ Kubelet如何知道当前节点应该运行哪些POD（如何获取PodSpec）？
 # cAdvisor 资源监控
 Kubernetes 集群中，应用程序的执行情况可以在不同的级别上监测到，这些级别包括：容器、Pod、Service 和整个集群。
 
-Heapster 项目为 Kubernetes 提供了一个基本的监控平台，它是集群级别的监控和事件数据集成器 (Aggregator)。Heapster 以 Pod 的方式运行在集群中，Heapster 通过 Kubelet 发现所有运行在集群中的节点，并查看来自这些节点的资源使用情况。
+Metrics Server是用来取代Heapster项目的。有了Metric Server，用户就可以通过标准的Kubernetes API访问这些监控数据了， 例如
 
-Kubelet 通过 cAdvisor 获取其所在节点及容器的数据。Heapster 通过带着关联标签的 Pod 分组这些信息，这些数据将被推到一个可配置的后端，用于存储和可视化展示。支持的后端包括 InfluxDB(使用 Grafana 实现可视化) 和 Google Cloud Monitoring。
+```
+GET http://127.0.0.1:8001/apis/metrics.k8s.io/v1beta1/namespace/default/pod/nginx
+```
+
+当我们访问这个Metrics API时， 它会返回一个POD的监控数据，而这些数据其实是从kubelet的Summary API（kubelet_ip:kubelet_port/stats/summary/采集而来的）。SummaryAPI返回的信息既包括了CAdvisor的监控数据，也包括了kubelet汇总的信息。
 
 cAdvisor 是一个开源的分析容器资源使用率和性能特性的代理工具，集成到 Kubelet中，当Kubelet启动时会同时启动cAdvisor，且一个cAdvisor只监控一个Node节点的信息。cAdvisor 自动查找所有在其所在节点上的容器，自动采集 CPU、内存、文件系统和网络使用的统计信息。
 
