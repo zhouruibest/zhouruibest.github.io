@@ -13,22 +13,10 @@
 
 - Context的底层实现，是否是线程安全的？⭐⭐⭐⭐⭐
 - 字符串转为数据流，需不需要进行深拷贝？⭐⭐⭐⭐⭐
-
-- Readiness Gate ⭐
-使用 Readiness Gate 解决 EKS Pod 滚动升级产生的服务中断
-
-- 容器安全 ⭐⭐
-https://www.cnblogs.com/tylerzhou/p/11078128.html
-
-
-- kubelet，probe manager，gateprobe ⭐⭐⭐⭐⭐
-
 - cgroup
 https://www.ctyun.cn/developer/article/469033632022597
 https://blog.kelu.org/tech/2019/10/11/kubernetes-limit-iops-per-container.html
 https://cloud.tencent.com/developer/article/2314677
-
-
 - prometheus ⭐⭐⭐⭐
 - Opentelemetry ⭐⭐
 - service mesh istio ⭐⭐
