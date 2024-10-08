@@ -6,18 +6,8 @@
 
 # 3. 知识点
 
-
-
-- cgroup
-https://www.ctyun.cn/developer/article/469033632022597
-https://blog.kelu.org/tech/2019/10/11/kubernetes-limit-iops-per-container.html
-https://cloud.tencent.com/developer/article/2314677
-
 - prometheus ⭐⭐⭐⭐
-
-
 - Opentelemetry ⭐⭐
-
 - service mesh istio ⭐⭐
 - 多云环境，kubevela ⭐⭐
 - etcd  ⭐⭐⭐⭐
