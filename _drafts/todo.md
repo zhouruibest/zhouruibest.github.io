@@ -6,7 +6,6 @@
 
 # 3. 知识点
 
-- prometheus ⭐⭐⭐⭐
 - Opentelemetry ⭐⭐
 - service mesh istio ⭐⭐
 - 多云环境，kubevela ⭐⭐
