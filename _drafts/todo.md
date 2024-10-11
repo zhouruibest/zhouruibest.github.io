@@ -9,9 +9,12 @@
 - Opentelemetry ⭐⭐
 - service mesh istio ⭐⭐
 - 多云环境，kubevela ⭐⭐
-- etcd  ⭐⭐⭐⭐
+- etcd,kcm ⭐⭐⭐⭐
 - redis ⭐⭐
-- sla slo ⭐
+- sla slo sli⭐
+- 限流算法 ⭐⭐⭐⭐
+- Argo Workflow ⭐⭐⭐⭐
+- Kube-Schduler
 
 
 
