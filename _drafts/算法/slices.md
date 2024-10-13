@@ -29,5 +29,16 @@ slices.Sort(s1)
 比较函数的原型是func(a,b E) int, 是一个Less函数，E的类型和数组的是一样的
 
 slices.SortFunc(names, func(a, b string) int {
-		return cmp.Compare(strings.ToLower(a), strings.ToLower(b))
+	return cmp.Compare(strings.ToLower(a), strings.ToLower(b))
+})
+
+
+# Index
+
+index := slices.Index(nums, target) // index or -1
+
+# IndexFunc
+// IndexFunc returns the first index i satisfying f(s[i]), or -1 if none do.
+i := slices.IndexFunc(numbers, func(n int) bool {
+    return n < 0
 })
