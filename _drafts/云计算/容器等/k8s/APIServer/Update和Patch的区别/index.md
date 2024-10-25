@@ -140,6 +140,18 @@ apply patch 分为client-side apply和服务器端的server-side apply。
 
 ### server-side apply [k8s v1.18新特性]
 
+server-side apply是k8s v1.18的新特性，在Kubernetes 1.18中，所有新对象都将附加managedFields，并提供关于冲突的准确信息。
+
+那什么是Server-side Apply呢？简单的说就是多个Controller控制一个资源, 通过managedFields来记录哪个Field被哪个资源控制，例如 WorkloadController只能修改image相关的操作，而ScaleController 只能修改副本数。
+
+相比于client-side apply 用 last-applied annotations的方式，服务器端(server-side) apply 新提供了一种声明式 API (叫 ManagedFields) 来明确指定谁管理哪些资源字段。当使用server-side apply时，尝试着去改变一个被其他人管理的字段， 会导致请求被拒绝（在没有设置强制执行时，参见冲突）
+
+冲突是一种特定的错误状态， 发生在执行 Apply 改变一个字段，而恰巧该字段被其他用户声明过主权时。 这可以防止一个应用者不小心覆盖掉其他用户设置的值。 冲突发生时，应用者有三种办法来解决它：
+
+- **覆盖前值，成为唯一的管理器**：如果打算覆盖该值（或应用者是一个自动化部件，比如控制器）， 应用者应该设置查询参数 force 为 true，然后再发送一次请求。 这将强制操作成功，改变字段的值，从所有其他管理器的 managedFields 条目中删除指定字段。
+不覆盖前值，放弃管理权： 如果应用者不再关注该字段的值， 可以从配置文件中删掉它，再重新发送请求。 这就保持了原值不变，并从 managedFields 的应用者条目中删除该字段。
+不覆盖前值，成为共享的管理器： 如果应用者仍然关注字段值，并不想覆盖它， 他们可以在配置文件中把字段的值改为和服务器对象一样，再重新发送请求。 这样在不改变字段值的前提下， 就实现了字段管理被应用者和所有声明了管理权的其他的字段管理器共享
+
 
 
 
