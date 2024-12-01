@@ -1,5 +1,6 @@
 # ubuntu 安装 docker
 
+
 1. 检查卸载老版本docker
 ubuntu下自带了docker的库，不需要添加新的源。
 但是ubuntu自带的docker版本太低，需要先卸载旧的再安装新的。
@@ -33,6 +34,25 @@ systemctl start docker
 8. 安装工具
 
 apt-get -y install apt-transport-https ca-certificates curl software-properties-common
+
+
+```bash
+
+apt-get remove docker docker-engine docker.io containerd runc &&
+apt update &&
+apt upgrade &&
+apt-get install ca-certificates curl gnupg lsb-release
+
+curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | apt-key add -
+
+add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable" &&
+apt-get -y install docker-ce docker-ce-cli containerd.io &&
+systemctl start docker &&
+apt-get -y install apt-transport-https ca-certificates curl software-properties-common &&
+curl -L https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) > /usr/bin/docker-compose &&
+chmod +x /usr/bin/docker-compose &&
+docker-compose --version
+```
 
 # 安装 Docker-Compose
 curl -L https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) > /usr/bin/docker-compose
