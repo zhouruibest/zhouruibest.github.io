@@ -1,0 +1,54 @@
+##############################################
+# 基于centos7.5.1804构建python3.6.7运行环境
+# 构建命令: 在Dockerfile文件目录下执行 docker build -t python:3.6.7 -f Dockerfile-python367 --network=host .
+# 测试容器: docker run -it --rm=true --name=python367 --network=host python:3.6.7 bash
+# 进入容器：docker exec -it python /bin/bash
+##############################################
+FROM centos:7.5.1804
+
+MAINTAINER ruizhou
+
+WORKDIR /data/
+
+USER root
+
+# 更换yum源
+RUN yum install -y wget \
+    && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
+    && wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.cloud.tencent.com/repo/centos7_base.repo \
+    && yum clean all \
+    && yum makecache \
+    && yum update -y
+
+RUN set -ex \
+    # 预安装所需组件
+    && yum install -y jq tar libffi-devel zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make initscripts jq openssh openssh-server vim zip unzip openssh-clients \
+    && yum groupinstall -y "Development Tools" \
+    && wget https://www.python.org/ftp/python/3.6.7/Python-3.6.7.tgz \
+    && tar -zxvf Python-3.6.7.tgz \
+    && cd Python-3.6.7 \
+    && ./configure prefix=/usr/local/python3 \
+    && make \
+    && make install \
+    && make clean \
+    && rm -rf /Python-3.6.7* \
+    && yum install -y epel-release \
+    && yum install -y python-pip
+
+# 安装java
+RUN wget https://zcc2018.oss-cn-beijing.aliyuncs.com/jdk-8u171-linux-x64.tar.gz \
+    && tar -zxvf jdk-8u171-linux-x64.tar.gz -C /opt/ \
+    && JAVA_HOME=/opt/jdk1.8.0_171 \
+    && CLASSPATH=$CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib \
+    && PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH:HOME/bin \
+    && echo "export JAVA_HOME=$JAVA_HOME">>/etc/profile \
+    && echo "export CLASSPATH=$CLASSPATH">>/etc/profile \
+    && echo "export PATH=$PATH">>/etc/profile
+RUN set -ex \
+    # 备份旧版本python
+    && mv /usr/bin/python /usr/bin/python27 \
+RUN set -ex \
+    # 修改系统时区为东八区
+    && rm -rf /etc/localtime \
+ENV JAVA_HOME /opt/jdk1.8.0_171
+ENV PATH $PATH:$JAVA_HOME/bin
